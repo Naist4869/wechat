@@ -4,7 +4,8 @@ import (
 	"context"
 	"time"
 
-	"wechat/internal/model"
+	"wechat/model"
+
 	"github.com/go-kratos/kratos/pkg/cache/memcache"
 	"github.com/go-kratos/kratos/pkg/cache/redis"
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
@@ -28,10 +29,10 @@ type Dao interface {
 
 // dao dao.
 type dao struct {
-	db          *sql.DB
-	redis       *redis.Redis
-	mc          *memcache.Memcache
-	cache *fanout.Fanout
+	db         *sql.DB
+	redis      *redis.Redis
+	mc         *memcache.Memcache
+	cache      *fanout.Fanout
 	demoExpire int32
 }
 
@@ -41,17 +42,17 @@ func New(r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d Dao, cf func(), e
 }
 
 func newDao(r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d *dao, cf func(), err error) {
-	var cfg struct{
+	var cfg struct {
 		DemoExpire xtime.Duration
 	}
 	if err = paladin.Get("application.toml").UnmarshalTOML(&cfg); err != nil {
 		return
 	}
 	d = &dao{
-		db: db,
-		redis: r,
-		mc: mc,
-		cache: fanout.New("cache"),
+		db:         db,
+		redis:      r,
+		mc:         mc,
+		cache:      fanout.New("cache"),
 		demoExpire: int32(time.Duration(cfg.DemoExpire) / time.Second),
 	}
 	cf = d.Close

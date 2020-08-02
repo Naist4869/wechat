@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"crypto/subtle"
 	"encoding/xml"
 	"errors"
@@ -10,12 +11,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"wechat/internal/bytesconv"
 	"wechat/internal/service"
 
 	"github.com/go-kratos/kratos/pkg/net/http/blademaster/binding"
 
 	pb "wechat/api"
-	"wechat/internal/model"
+	"wechat/model"
 
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
 	"github.com/go-kratos/kratos/pkg/log"
@@ -52,7 +54,18 @@ func initRouter(e *bm.Engine) {
 	{
 		g.GET("/start", howToStart)
 		g.GET("/callback", certification)
-		g.POST("/callback", verify, callback)
+		g.POST("/callback", func(ctx *bm.Context) {
+			withTimeout, _ := context.WithTimeout(ctx, time.Second*3)
+
+			go func(c context.Context) {
+				<-withTimeout.Done()
+				log.Error("POST /callback handle timeout")
+				ctx.String(http.StatusOK, "")
+				ctx.Abort()
+				ctx.IsAborted()
+			}(withTimeout)
+
+		}, verify, callback)
 	}
 }
 
@@ -89,6 +102,8 @@ func certification(ctx *bm.Context) {
 }
 
 func verify(ctx *bm.Context) {
+	time.Sleep(6 * time.Second)
+
 	v := new(struct {
 		Signature    string `form:"signature" binding:"required"`
 		TimeStamp    string `form:"timestamp" binding:"required"`
@@ -137,15 +152,15 @@ func verify(ctx *bm.Context) {
 			}
 		}
 		{
-			wantMsgSignature := []byte(Sign(token, v.TimeStamp, v.Nonce, xmlRxEncrypt.Encrypt))
-			if subtle.ConstantTimeCompare([]byte(v.MsgSignature), wantMsgSignature) != 1 {
+			wantMsgSignature := bytesconv.StringToBytes(Sign(token, v.TimeStamp, v.Nonce, xmlRxEncrypt.Encrypt))
+			if subtle.ConstantTimeCompare(bytesconv.StringToBytes(v.MsgSignature), wantMsgSignature) != 1 {
 				RespErr(fmt.Errorf("check msg_signature failed! have: %s, want: %s", v.MsgSignature, wantMsgSignature))
 				return
 			}
 		}
 
 		aesKey := svr.GetAESKey()
-		random, rawXMLMsg, haveAppIdBytes, err := AESDecryptMsg([]byte(xmlRxEncrypt.Encrypt), aesKey)
+		random, rawXMLMsg, haveAppIdBytes, err := AESDecryptMsg(bytesconv.StringToBytes(xmlRxEncrypt.Encrypt), aesKey)
 		if err != nil {
 			RespErr(err)
 			return
@@ -196,12 +211,12 @@ func callback(ctx *bm.Context) {
 		ctx.JSON(nil, errors.New("UseCase: missing required parameters"))
 		return
 	}
-	log.Info("receive message: %s", rawXMLMsg)
+	log.Warn("receive raw message: \n%s", rawXMLMsg)
 	replyMessage, err := svr.ReplyMessage(ctx.Context, rawXMLMsg.([]byte))
 	if err != nil {
 		log.Error("callback: (%v)", err)
 	}
-	log.Info("reply message: %s", replyMessage)
+	log.Warn("reply raw message: %s", replyMessage)
 	handleFun.(handleXMLMsg)(ctx, replyMessage, time.Now())
 }
 

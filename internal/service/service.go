@@ -3,9 +3,14 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"encoding/xml"
 	"fmt"
+	"time"
 	pb "wechat/api"
 	"wechat/internal/dao"
+	"wechat/model"
+
+	"github.com/go-kratos/kratos/pkg/log"
 
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
 
@@ -51,15 +56,81 @@ func (s *Service) GetAESKey() []byte {
 }
 
 func (s *Service) ReplyMessage(ctx context.Context, xmlMsg []byte) (reply []byte, err error) {
-	reply = []byte(`<xml><ToUserName><![CDATA[oqeBd0fGbtYTmoVGhHzZ5Nf3-Egc]]></ToUserName>
-	<FromUserName><![CDATA[gh_6f7fdb146e4f]]></FromUserName>
-	<CreateTime>1596123779</CreateTime>
-	<MsgType><![CDATA[text]]></MsgType>
-	<Content><![CDATA[a]]></Content>
-	<MsgId>22850995649101140</MsgId>
-	</xml>`)
+	rx, err := model.FromEnvelope(xmlMsg)
+	if err != nil {
+		err = fmt.Errorf("ReplyMessage: (%w)", err)
+		return
+	}
+	log.Info("receive message: %s", rx)
+	var txMessage model.TxMessageKind
 
-	return
+	switch rx.MsgType {
+	case model.RxMessageTypeText:
+		// 不用ok是因为var _ RxTextMessageExtra = (*rxTextMessageSpecifics)(nil)检查过了
+		text, _ := rx.Text()
+		txMessage = s.handleText(text)
+	case model.RxMessageTypeImage:
+		image, _ := rx.Image()
+		txMessage = s.handleImage(image)
+	case model.RxMessageTypeVoice:
+		voice, _ := rx.Voice()
+		txMessage = s.handleVoice(voice)
+	case model.RxMessageTypeVideo:
+		video, _ := rx.Video()
+		txMessage = s.handleVideo(video)
+	case model.RxMessageTypeLocation:
+		location, _ := rx.Location()
+		txMessage = s.handleLocation(location)
+	case model.RxMessageTypeLink:
+		link, _ := rx.Link()
+		txMessage = s.handleLink(link)
+	case model.RxMessageTypeShortVideo:
+		video, _ := rx.ShortVideo()
+		txMessage = s.handleShortVideo(video)
+	default:
+		err = fmt.Errorf("ReplyMessage: can not handle message '%#v'", rx)
+		return
+	}
+
+	if txMessage == nil {
+		err = fmt.Errorf("ReplyMessage: Unimplemented interface")
+		specifics := model.NewTxTextMessageSpecifics("不知道你在说啥")
+		return xml.Marshal(model.NewTxMessage(rx.FromUserName, rx.ToUserName, specifics.TxMessageType(), time.Now().Unix(), rx.MsgID, specifics))
+	}
+
+	tx := model.NewTxMessage(rx.FromUserName, rx.ToUserName, txMessage.TxMessageType(), time.Now().Unix(), rx.MsgID, txMessage)
+	log.Info("reply message: %s", tx)
+	return xml.Marshal(tx)
+
+}
+func (s *Service) handleText(text model.RxTextMessageExtra) model.TxMessageKind {
+	switch content := text.GetContent(); content {
+	case "我要表情包":
+		return model.NewTxTextMessageSpecifics("不给")
+	}
+	return nil
+}
+func (s *Service) handleImage(image model.RxImageMessageExtra) model.TxMessageKind {
+	return nil
+}
+func (s *Service) handleVoice(voice model.RxVoiceMessageExtra) model.TxMessageKind {
+	return nil
+
+}
+func (s *Service) handleVideo(video model.RxVideoMessageExtra) model.TxMessageKind {
+	return nil
+
+}
+func (s *Service) handleLocation(location model.RxLocationMessageExtra) model.TxMessageKind {
+	return nil
+
+}
+func (s *Service) handleLink(link model.RxLinkMessageExtra) model.TxMessageKind {
+	return nil
+
+}
+func (s *Service) handleShortVideo(image model.RxShortVideoMessageExtra) model.TxMessageKind {
+	return nil
 
 }
 
