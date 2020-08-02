@@ -4,11 +4,17 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"time"
 	pb "wechat/api"
 	"wechat/internal/dao"
 	"wechat/model"
+
+	"github.com/go-kratos/kratos/pkg/net/rpc/warden"
+	xtime "github.com/go-kratos/kratos/pkg/time"
+
+	"google.golang.org/grpc"
 
 	"github.com/go-kratos/kratos/pkg/log"
 
@@ -19,15 +25,45 @@ import (
 )
 
 var Provider = wire.NewSet(New, wire.Bind(new(pb.DemoServer), new(*Service)), wire.Bind(new(Server), new(*Service)))
+var aesKey string
 
 // Service service.
 type Service struct {
-	ac  *paladin.Map
-	dao dao.Dao
+	ac               *paladin.Map
+	dao              dao.Dao
+	fileSystemClient pb.FileSystemClient
+}
+
+func (s *Service) MediaIDGet(ctx context.Context, req model.MediaIDReq, args ...interface{}) (resp model.MediaIDResp, err error) {
+	option := make([]grpc.CallOption, len(args))
+	for i := range args {
+		if o, ok := args[i].(grpc.CallOption); ok {
+			option[i] = o
+		}
+	}
+	get := new(pb.MediaIDResp)
+	get, err = s.fileSystemClient.MediaIDGet(ctx, &pb.MediaIDReq{
+		FakeID:    req.FakeID,
+		Timestamp: req.Timestamp,
+	}, option...)
+	if err != nil {
+		err = fmt.Errorf("MediaIDGet: (%w)", err)
+		return
+	}
+	if get == nil {
+		err = errors.New("MediaIDGet: rpc get is nil")
+		return
+	}
+	resp.MediaID = get.MediaID
+	return
 }
 
 func (s *Service) GetToken() string {
 	return paladin.String(s.ac.Get("token"), "")
+}
+
+func (s *Service) GetSecret() string {
+	return paladin.String(s.ac.Get("secret"), "")
 }
 
 func (s *Service) GetOriID() string {
@@ -68,6 +104,18 @@ func (s *Service) ReplyMessage(ctx context.Context, xmlMsg []byte) (reply []byte
 	case model.RxMessageTypeText:
 		// 不用ok是因为var _ RxTextMessageExtra = (*rxTextMessageSpecifics)(nil)检查过了
 		text, _ := rx.Text()
+		// 尴尬了.
+		if text.GetContent() == "【收到不支持的消息类型，暂无法显示】" {
+			mediaIDResp, err := s.MediaIDGet(context.Background(), model.MediaIDReq{
+				FakeID:    rx.FromUserName,
+				Timestamp: rx.CreateTime,
+			})
+			if err != nil {
+				err = fmt.Errorf("ReplyMessage: (%w)", err)
+			}
+			txMessage = model.NewTxImageMessageSpecifics(mediaIDResp.MediaID)
+			break
+		}
 		txMessage = s.handleText(text)
 	case model.RxMessageTypeImage:
 		image, _ := rx.Image()
@@ -142,6 +190,11 @@ func New(d dao.Dao) (s *Service, cf func(), err error) {
 	}
 	cf = s.Close
 	err = paladin.Watch("application.toml", s.ac)
+	if s.fileSystemClient, err = pb.NewClient(&warden.ClientConfig{
+		Timeout: xtime.Duration(time.Second * 5),
+	}); err != nil {
+		panic(err)
+	}
 	return
 }
 

@@ -1,8 +1,8 @@
 package http
 
 import (
-	"context"
 	"crypto/subtle"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -54,21 +54,30 @@ func initRouter(e *bm.Engine) {
 	{
 		g.GET("/start", howToStart)
 		g.GET("/callback", certification)
-		g.POST("/callback", func(ctx *bm.Context) {
-			withTimeout, _ := context.WithTimeout(ctx, time.Second*3)
-
-			go func(c context.Context) {
-				<-withTimeout.Done()
-				log.Error("POST /callback handle timeout")
-				ctx.String(http.StatusOK, "")
-				ctx.Abort()
-				ctx.IsAborted()
-			}(withTimeout)
-
-		}, verify, callback)
+		g.POST("/callback", verify, callback)
 	}
+	e.POST("/api/invoke", invoke)
 }
+func invoke(ctx *bm.Context) {
+	v := new(struct {
+		ID     int64           `json:"id"`     //ID
+		Time   int64           `json:"time"`   //调用发起时间,unix epoch 精确到秒
+		Key    string          `json:"key"`    //加密之后的key
+		Data   json.RawMessage `json:"data"`   //调用参数
+		APIkey string          `json:"apiKey"` //调用API的key
+	})
+	if err := ctx.Bind(v); err != nil {
+		return
+	}
 
+	ctx.JSON(struct {
+		Appid  string `json:"appid"`
+		Secret string `json:"secret"`
+	}{
+		Appid:  svr.GetAppID(),
+		Secret: svr.GetSecret(),
+	}, nil)
+}
 func ping(ctx *bm.Context) {
 	if _, err := svr.Ping(ctx, nil); err != nil {
 		log.Error("ping error(%v)", err)
@@ -102,8 +111,6 @@ func certification(ctx *bm.Context) {
 }
 
 func verify(ctx *bm.Context) {
-	time.Sleep(6 * time.Second)
-
 	v := new(struct {
 		Signature    string `form:"signature" binding:"required"`
 		TimeStamp    string `form:"timestamp" binding:"required"`

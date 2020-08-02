@@ -3,7 +3,6 @@ package dao
 import (
 	"context"
 	"time"
-
 	"wechat/model"
 
 	"github.com/go-kratos/kratos/pkg/cache/memcache"
@@ -56,6 +55,7 @@ func newDao(r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d *dao, cf func(
 		demoExpire: int32(time.Duration(cfg.DemoExpire) / time.Second),
 	}
 	cf = d.Close
+
 	return
 }
 
