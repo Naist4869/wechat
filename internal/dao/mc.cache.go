@@ -19,9 +19,10 @@ import (
 	"context"
 	"fmt"
 
+	"wechat/model"
+
 	"github.com/go-kratos/kratos/pkg/cache/memcache"
 	"github.com/go-kratos/kratos/pkg/log"
-	"wechat/internal/model"
 )
 
 var _ _mc

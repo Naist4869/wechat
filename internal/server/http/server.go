@@ -2,6 +2,7 @@ package http
 
 import (
 	"crypto/subtle"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -10,12 +11,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"wechat/internal/bytesconv"
 	"wechat/internal/service"
 
 	"github.com/go-kratos/kratos/pkg/net/http/blademaster/binding"
 
 	pb "wechat/api"
-	"wechat/internal/model"
+	"wechat/model"
 
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
 	"github.com/go-kratos/kratos/pkg/log"
@@ -54,8 +56,28 @@ func initRouter(e *bm.Engine) {
 		g.GET("/callback", certification)
 		g.POST("/callback", verify, callback)
 	}
+	e.POST("/api/invoke", invoke)
 }
+func invoke(ctx *bm.Context) {
+	v := new(struct {
+		ID     int64           `json:"id"`     //ID
+		Time   int64           `json:"time"`   //调用发起时间,unix epoch 精确到秒
+		Key    string          `json:"key"`    //加密之后的key
+		Data   json.RawMessage `json:"data"`   //调用参数
+		APIkey string          `json:"apiKey"` //调用API的key
+	})
+	if err := ctx.Bind(v); err != nil {
+		return
+	}
 
+	ctx.JSON(struct {
+		Appid  string `json:"appid"`
+		Secret string `json:"secret"`
+	}{
+		Appid:  svr.GetAppID(),
+		Secret: svr.GetSecret(),
+	}, nil)
+}
 func ping(ctx *bm.Context) {
 	if _, err := svr.Ping(ctx, nil); err != nil {
 		log.Error("ping error(%v)", err)
@@ -137,15 +159,15 @@ func verify(ctx *bm.Context) {
 			}
 		}
 		{
-			wantMsgSignature := []byte(Sign(token, v.TimeStamp, v.Nonce, xmlRxEncrypt.Encrypt))
-			if subtle.ConstantTimeCompare([]byte(v.MsgSignature), wantMsgSignature) != 1 {
+			wantMsgSignature := bytesconv.StringToBytes(Sign(token, v.TimeStamp, v.Nonce, xmlRxEncrypt.Encrypt))
+			if subtle.ConstantTimeCompare(bytesconv.StringToBytes(v.MsgSignature), wantMsgSignature) != 1 {
 				RespErr(fmt.Errorf("check msg_signature failed! have: %s, want: %s", v.MsgSignature, wantMsgSignature))
 				return
 			}
 		}
 
 		aesKey := svr.GetAESKey()
-		random, rawXMLMsg, haveAppIdBytes, err := AESDecryptMsg([]byte(xmlRxEncrypt.Encrypt), aesKey)
+		random, rawXMLMsg, haveAppIdBytes, err := AESDecryptMsg(bytesconv.StringToBytes(xmlRxEncrypt.Encrypt), aesKey)
 		if err != nil {
 			RespErr(err)
 			return
@@ -196,12 +218,12 @@ func callback(ctx *bm.Context) {
 		ctx.JSON(nil, errors.New("UseCase: missing required parameters"))
 		return
 	}
-	log.Info("receive message: %s", rawXMLMsg)
+	log.Warn("receive raw message: \n%s", rawXMLMsg)
 	replyMessage, err := svr.ReplyMessage(ctx.Context, rawXMLMsg.([]byte))
 	if err != nil {
 		log.Error("callback: (%v)", err)
 	}
-	log.Info("reply message: %s", replyMessage)
+	log.Warn("reply raw message: %s", replyMessage)
 	handleFun.(handleXMLMsg)(ctx, replyMessage, time.Now())
 }
 

@@ -16,8 +16,9 @@ package dao
 import (
 	"context"
 
+	"wechat/model"
+
 	"github.com/go-kratos/kratos/pkg/cache"
-	"wechat/internal/model"
 )
 
 // Article get data from cache if miss will call source method, then add to cache.

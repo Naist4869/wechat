@@ -29,6 +29,9 @@ var PathDemoPing = "/demo.service.v1.Demo/Ping"
 var PathDemoSayHello = "/demo.service.v1.Demo/SayHello"
 var PathDemoSayHelloURL = "/kratos-demo/say_hello"
 
+var PathFileSystemPing = "/demo.service.v1.FileSystem/Ping"
+var PathFileSystemMediaIDGet = "/demo.service.v1.FileSystem/MediaIDGet"
+
 // DemoBMServer is the server API for Demo service.
 type DemoBMServer interface {
 	Ping(ctx context.Context, req *google_protobuf1.Empty) (resp *google_protobuf1.Empty, err error)
@@ -73,4 +76,38 @@ func RegisterDemoBMServer(e *bm.Engine, server DemoBMServer) {
 	e.GET("/demo.service.v1.Demo/Ping", demoPing)
 	e.GET("/demo.service.v1.Demo/SayHello", demoSayHello)
 	e.GET("/kratos-demo/say_hello", demoSayHelloURL)
+}
+
+// FileSystemBMServer is the server API for FileSystem service.
+type FileSystemBMServer interface {
+	Ping(ctx context.Context, req *google_protobuf1.Empty) (resp *google_protobuf1.Empty, err error)
+
+	MediaIDGet(ctx context.Context, req *MediaIDReq) (resp *MediaIDResp, err error)
+}
+
+var FileSystemSvc FileSystemBMServer
+
+func fileSystemPing(c *bm.Context) {
+	p := new(google_protobuf1.Empty)
+	if err := c.BindWith(p, binding.Default(c.Request.Method, c.Request.Header.Get("Content-Type"))); err != nil {
+		return
+	}
+	resp, err := FileSystemSvc.Ping(c, p)
+	c.JSON(resp, err)
+}
+
+func fileSystemMediaIDGet(c *bm.Context) {
+	p := new(MediaIDReq)
+	if err := c.BindWith(p, binding.Default(c.Request.Method, c.Request.Header.Get("Content-Type"))); err != nil {
+		return
+	}
+	resp, err := FileSystemSvc.MediaIDGet(c, p)
+	c.JSON(resp, err)
+}
+
+// RegisterFileSystemBMServer Register the blademaster route
+func RegisterFileSystemBMServer(e *bm.Engine, server FileSystemBMServer) {
+	FileSystemSvc = server
+	e.GET("/demo.service.v1.FileSystem/Ping", fileSystemPing)
+	e.GET("/demo.service.v1.FileSystem/MediaIDGet", fileSystemMediaIDGet)
 }
