@@ -1,0 +1,8 @@
+
+# This is a TOML document. Boom~
+demoExpire = "24h"
+oriID= "gh_6f7fdb146e4f"
+appID=  "wx25469ec12e4de6d9"
+token="memeda"
+base64AESKey = "I4MLWD67h3xj8sUfCCvcX0gicL9FLLy2jL2iVyKN5pI"
+secret = "bb5217690e6831e8b399e1263749fe81"
