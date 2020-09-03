@@ -22,7 +22,6 @@
   `FromUserName` | `FromUserName` | `cdataNode` | 发送方帐号（一个OpenID）
   `CreateTime`   | `CreateTime`   | `int64`  | 消息创建时间 （整型）
   `MsgType`      | `MsgType`      | `cdataNode` | 消息类型，文本为text
-  `MsgID`        | `MsgId`        | `int64`  | 消息id，64位整
   `Extra`        | ``        | ` TxMessageKind` 里面放的是不同对象的实现类型 |
 
 ### `rxMessageSuperset` 接收消息的超集

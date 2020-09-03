@@ -132,12 +132,11 @@ func (tx *TxMessage) String() string {
 
 	_, _ = fmt.Fprintf(
 		&sb,
-		"TxMessage { FromUserName: %#v, ToUserName: %#v, CreateTime: %s, MsgType: %#v, MsgID: %d ",
+		"TxMessage { FromUserName: %#v, ToUserName: %#v, CreateTime: %s, MsgType: %#v ",
 		tx.FromUserName,
 		tx.ToUserName,
 		time.Unix(tx.CreateTime, 0).Format(time.RFC3339),
 		tx.MsgType,
-		tx.MsgID,
 	)
 
 	tx.Extra.formatInto(&sb)

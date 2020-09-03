@@ -2,7 +2,6 @@ package http
 
 import (
 	"crypto/subtle"
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -31,21 +30,42 @@ type handleXMLMsg func(ctx *bm.Context, replyMessage []byte, timestamp time.Time
 // New new a bm server.
 func New(s service.Server) (engine *bm.Engine, err error) {
 	var (
-		cfg bm.ServerConfig
-		ct  paladin.TOML
+		cfg struct {
+			Server *bm.ServerConfig
+			Client *bm.ClientConfig
+		}
+		ct paladin.TOML
 	)
+
 	if err = paladin.Get("http.toml").Unmarshal(&ct); err != nil {
 		return
 	}
-	if err = ct.Get("Server").UnmarshalTOML(&cfg); err != nil {
+	if err = ct.Get("bm").UnmarshalTOML(&cfg); err != nil {
 		return
 	}
 	svr = s
-	engine = bm.DefaultServer(&cfg)
+	engine = bm.DefaultServer(cfg.Server)
 	pb.RegisterDemoBMServer(engine, s)
 	initRouter(engine)
 	err = engine.Start()
 	return
+}
+
+type Template struct {
+	// Title 连衣裙	商品标题
+	Title string
+	// PictURL http://gi4.md.alicdn.com/bao/uploaded/i4/xxx.jpg	商品主图
+	PictURL string
+	// ReservePrice 102.00	商品一口价格
+	ReservePrice string
+	// ZkFinalPrice 	88.00	折扣价（元） 若属于预售商品，付定金时间内，折扣价=预售价
+	ZkFinalPrice string
+	// UserType 1	卖家类型，0表示集市，1表示商城
+	UserType int
+	// Nick xx旗舰店	店铺名称
+	Nick string
+	// 高佣淘口令
+	TKL string
 }
 
 func initRouter(e *bm.Engine) {
@@ -56,28 +76,8 @@ func initRouter(e *bm.Engine) {
 		g.GET("/callback", certification)
 		g.POST("/callback", verify, callback)
 	}
-	e.POST("/api/invoke", invoke)
 }
-func invoke(ctx *bm.Context) {
-	v := new(struct {
-		ID     int64           `json:"id"`     //ID
-		Time   int64           `json:"time"`   //调用发起时间,unix epoch 精确到秒
-		Key    string          `json:"key"`    //加密之后的key
-		Data   json.RawMessage `json:"data"`   //调用参数
-		APIkey string          `json:"apiKey"` //调用API的key
-	})
-	if err := ctx.Bind(v); err != nil {
-		return
-	}
 
-	ctx.JSON(struct {
-		Appid  string `json:"appid"`
-		Secret string `json:"secret"`
-	}{
-		Appid:  svr.GetAppID(),
-		Secret: svr.GetSecret(),
-	}, nil)
-}
 func ping(ctx *bm.Context) {
 	if _, err := svr.Ping(ctx, nil); err != nil {
 		log.Error("ping error(%v)", err)
@@ -219,7 +219,7 @@ func callback(ctx *bm.Context) {
 		return
 	}
 	log.Warn("receive raw message: \n%s", rawXMLMsg)
-	replyMessage, err := svr.ReplyMessage(ctx.Context, rawXMLMsg.([]byte))
+	replyMessage, err := svr.ReplyMessage(ctx, rawXMLMsg.([]byte))
 	if err != nil {
 		log.Error("callback: (%v)", err)
 	}

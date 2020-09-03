@@ -32,6 +32,29 @@ service Demo {
 service FileSystem {
   rpc Ping(.google.protobuf.Empty) returns (.google.protobuf.Empty);
   rpc MediaIDGet(MediaIDReq)returns(MediaIDResp);
+  rpc NewsURLGet(NewsURLGetReq)returns(NewsURLGetResp);
+
+}
+service TBK{
+  rpc Ping(.google.protobuf.Empty) returns (.google.protobuf.Empty);
+  rpc KeyConvert(KeyConvertReq) returns(KeyConvertResp);
+  rpc WithDraw(WithDrawReq)returns(WithDrawResp);
+}
+service Wechat{
+  rpc MatchedTemplateMsgSend(MatchedTemplateMsgSendReq) returns(.google.protobuf.Empty);
+  rpc BalanceTemplateMsgSend(BalanceTemplateMsgSendReq) returns(.google.protobuf.Empty);
+}
+message KeyConvertReq{
+  string FromKey = 1 ;
+  string UserID = 2 ;
+}
+message KeyConvertResp{
+  string ItemURL =1;
+  string Price=2;
+  string Rebate =3;
+  string Coupon=4;
+  string Title=5;
+  string PicURL=6;
 
 }
 message MediaIDReq{
@@ -49,4 +72,38 @@ message HelloReq {
 
 message HelloResp {
   string Content = 1 [(gogoproto.jsontag) = 'content'];
+}
+message NewsURLGetReq{
+  string  fakeID=1;
+  int64 timestamp =2;
+}
+message NewsURLGetResp{
+  string URL =1;
+}
+
+message MatchedTemplateMsgSendReq{
+  string userID = 1;
+  string orderID =2;
+  string title =3;
+  string paidTime =4;
+  string alipayTotalPrice=5;
+  string rebate = 6;
+}
+
+message BalanceTemplateMsgSendReq{
+  string userID = 1;
+  string orderID =2;
+  string title =3;
+  string earningTime =4;
+  string salary=5;
+  string balance = 6;
+}
+
+
+message WithDrawReq{
+  string userID = 1;
+}
+message WithDrawResp{
+  string Rebate =1;
+  repeated string OrderIDs =2;
 }

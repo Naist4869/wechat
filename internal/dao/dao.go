@@ -15,7 +15,7 @@ import (
 	"github.com/google/wire"
 )
 
-var Provider = wire.NewSet(New, NewDB, NewRedis, NewMC)
+var Provider = wire.NewSet(New, NewDB, NewRedis, NewMC, NewClient)
 
 //go:generate kratos tool genbts
 // Dao dao interface

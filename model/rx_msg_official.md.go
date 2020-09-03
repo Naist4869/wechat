@@ -29,9 +29,7 @@ type TxMessage struct {
 	CreateTime int64 `xml:"CreateTime"`
 	// MsgType 消息类型，文本为text
 	MsgType cdataNode `xml:"MsgType"`
-	// MsgID 消息id，64位整
-	MsgID int64 `xml:"MsgId"`
-	Extra TxMessageKind
+	Extra   TxMessageKind
 }
 
 // rxMessageSuperset 接收消息的超集

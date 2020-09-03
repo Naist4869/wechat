@@ -1,6 +1,8 @@
 package model
 
 import (
+	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 )
@@ -55,6 +57,25 @@ func (t *txVoiceMessageSpecifics) formatInto(w io.Writer) {
 
 func (t *txVoiceMessageSpecifics) TxMessageType() TxMessageType {
 	return TxMessageTypeVoice
+}
+
+func (t *txNewsMessageSpecifics) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	if t == nil {
+		return errors.New("空指针异常")
+	}
+	if err := e.EncodeElement(t.ArticleCount, xml.StartElement{
+		Name: xml.Name{
+			Local: "ArticleCount",
+		},
+	}); err != nil {
+		return err
+	}
+
+	return e.EncodeElement(t.Articles, xml.StartElement{
+		Name: xml.Name{
+			Local: "Articles",
+		},
+	})
 }
 
 func NewTxNewsMessageSpecifics(articleCount int, title string, description string, picURL string, url string) *txNewsMessageSpecifics {

@@ -31,6 +31,14 @@ var PathDemoSayHelloURL = "/kratos-demo/say_hello"
 
 var PathFileSystemPing = "/demo.service.v1.FileSystem/Ping"
 var PathFileSystemMediaIDGet = "/demo.service.v1.FileSystem/MediaIDGet"
+var PathFileSystemNewsURLGet = "/demo.service.v1.FileSystem/NewsURLGet"
+
+var PathTBKPing = "/demo.service.v1.TBK/Ping"
+var PathTBKKeyConvert = "/demo.service.v1.TBK/KeyConvert"
+var PathTBKWithDraw = "/demo.service.v1.TBK/WithDraw"
+
+var PathWechatMatchedTemplateMsgSend = "/demo.service.v1.Wechat/MatchedTemplateMsgSend"
+var PathWechatBalanceTemplateMsgSend = "/demo.service.v1.Wechat/BalanceTemplateMsgSend"
 
 // DemoBMServer is the server API for Demo service.
 type DemoBMServer interface {
@@ -83,6 +91,8 @@ type FileSystemBMServer interface {
 	Ping(ctx context.Context, req *google_protobuf1.Empty) (resp *google_protobuf1.Empty, err error)
 
 	MediaIDGet(ctx context.Context, req *MediaIDReq) (resp *MediaIDResp, err error)
+
+	NewsURLGet(ctx context.Context, req *NewsURLGetReq) (resp *NewsURLGetResp, err error)
 }
 
 var FileSystemSvc FileSystemBMServer
@@ -105,9 +115,99 @@ func fileSystemMediaIDGet(c *bm.Context) {
 	c.JSON(resp, err)
 }
 
+func fileSystemNewsURLGet(c *bm.Context) {
+	p := new(NewsURLGetReq)
+	if err := c.BindWith(p, binding.Default(c.Request.Method, c.Request.Header.Get("Content-Type"))); err != nil {
+		return
+	}
+	resp, err := FileSystemSvc.NewsURLGet(c, p)
+	c.JSON(resp, err)
+}
+
 // RegisterFileSystemBMServer Register the blademaster route
 func RegisterFileSystemBMServer(e *bm.Engine, server FileSystemBMServer) {
 	FileSystemSvc = server
 	e.GET("/demo.service.v1.FileSystem/Ping", fileSystemPing)
 	e.GET("/demo.service.v1.FileSystem/MediaIDGet", fileSystemMediaIDGet)
+	e.GET("/demo.service.v1.FileSystem/NewsURLGet", fileSystemNewsURLGet)
+}
+
+// TBKBMServer is the server API for TBK service.
+type TBKBMServer interface {
+	Ping(ctx context.Context, req *google_protobuf1.Empty) (resp *google_protobuf1.Empty, err error)
+
+	KeyConvert(ctx context.Context, req *KeyConvertReq) (resp *KeyConvertResp, err error)
+
+	WithDraw(ctx context.Context, req *WithDrawReq) (resp *WithDrawResp, err error)
+}
+
+var TBKSvc TBKBMServer
+
+func tBKPing(c *bm.Context) {
+	p := new(google_protobuf1.Empty)
+	if err := c.BindWith(p, binding.Default(c.Request.Method, c.Request.Header.Get("Content-Type"))); err != nil {
+		return
+	}
+	resp, err := TBKSvc.Ping(c, p)
+	c.JSON(resp, err)
+}
+
+func tBKKeyConvert(c *bm.Context) {
+	p := new(KeyConvertReq)
+	if err := c.BindWith(p, binding.Default(c.Request.Method, c.Request.Header.Get("Content-Type"))); err != nil {
+		return
+	}
+	resp, err := TBKSvc.KeyConvert(c, p)
+	c.JSON(resp, err)
+}
+
+func tBKWithDraw(c *bm.Context) {
+	p := new(WithDrawReq)
+	if err := c.BindWith(p, binding.Default(c.Request.Method, c.Request.Header.Get("Content-Type"))); err != nil {
+		return
+	}
+	resp, err := TBKSvc.WithDraw(c, p)
+	c.JSON(resp, err)
+}
+
+// RegisterTBKBMServer Register the blademaster route
+func RegisterTBKBMServer(e *bm.Engine, server TBKBMServer) {
+	TBKSvc = server
+	e.GET("/demo.service.v1.TBK/Ping", tBKPing)
+	e.GET("/demo.service.v1.TBK/KeyConvert", tBKKeyConvert)
+	e.GET("/demo.service.v1.TBK/WithDraw", tBKWithDraw)
+}
+
+// WechatBMServer is the server API for Wechat service.
+type WechatBMServer interface {
+	MatchedTemplateMsgSend(ctx context.Context, req *MatchedTemplateMsgSendReq) (resp *google_protobuf1.Empty, err error)
+
+	BalanceTemplateMsgSend(ctx context.Context, req *BalanceTemplateMsgSendReq) (resp *google_protobuf1.Empty, err error)
+}
+
+var WechatSvc WechatBMServer
+
+func wechatMatchedTemplateMsgSend(c *bm.Context) {
+	p := new(MatchedTemplateMsgSendReq)
+	if err := c.BindWith(p, binding.Default(c.Request.Method, c.Request.Header.Get("Content-Type"))); err != nil {
+		return
+	}
+	resp, err := WechatSvc.MatchedTemplateMsgSend(c, p)
+	c.JSON(resp, err)
+}
+
+func wechatBalanceTemplateMsgSend(c *bm.Context) {
+	p := new(BalanceTemplateMsgSendReq)
+	if err := c.BindWith(p, binding.Default(c.Request.Method, c.Request.Header.Get("Content-Type"))); err != nil {
+		return
+	}
+	resp, err := WechatSvc.BalanceTemplateMsgSend(c, p)
+	c.JSON(resp, err)
+}
+
+// RegisterWechatBMServer Register the blademaster route
+func RegisterWechatBMServer(e *bm.Engine, server WechatBMServer) {
+	WechatSvc = server
+	e.GET("/demo.service.v1.Wechat/MatchedTemplateMsgSend", wechatMatchedTemplateMsgSend)
+	e.GET("/demo.service.v1.Wechat/BalanceTemplateMsgSend", wechatBalanceTemplateMsgSend)
 }

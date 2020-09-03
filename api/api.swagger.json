@@ -119,6 +119,47 @@
                 ]
             }
         },
+        "/demo.service.v1.FileSystem/NewsURLGet": {
+            "get": {
+                "summary": "/demo.service.v1.FileSystem/NewsURLGet",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.demo.service.v1.NewsURLGetResp"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "fakeID",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "timestamp",
+                        "in": "query",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "tags": [
+                    "demo.service.v1.FileSystem"
+                ]
+            }
+        },
         "/demo.service.v1.FileSystem/Ping": {
             "get": {
                 "summary": "/demo.service.v1.FileSystem/Ping",
@@ -143,6 +184,239 @@
                 },
                 "tags": [
                     "demo.service.v1.FileSystem"
+                ]
+            }
+        },
+        "/demo.service.v1.TBK/KeyConvert": {
+            "get": {
+                "summary": "/demo.service.v1.TBK/KeyConvert",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.demo.service.v1.KeyConvertResp"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "FromKey",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "UserID",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "demo.service.v1.TBK"
+                ]
+            }
+        },
+        "/demo.service.v1.TBK/Ping": {
+            "get": {
+                "summary": "/demo.service.v1.TBK/Ping",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.google.protobuf.Empty"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "demo.service.v1.TBK"
+                ]
+            }
+        },
+        "/demo.service.v1.TBK/WithDraw": {
+            "get": {
+                "summary": "/demo.service.v1.TBK/WithDraw",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.demo.service.v1.WithDrawResp"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "userID",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "demo.service.v1.TBK"
+                ]
+            }
+        },
+        "/demo.service.v1.Wechat/BalanceTemplateMsgSend": {
+            "get": {
+                "summary": "/demo.service.v1.Wechat/BalanceTemplateMsgSend",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.google.protobuf.Empty"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "userID",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "orderID",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "earningTime",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "salary",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "balance",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "demo.service.v1.Wechat"
+                ]
+            }
+        },
+        "/demo.service.v1.Wechat/MatchedTemplateMsgSend": {
+            "get": {
+                "summary": "/demo.service.v1.Wechat/MatchedTemplateMsgSend",
+                "responses": {
+                    "200": {
+                        "description": "A successful response.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/.google.protobuf.Empty"
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "userID",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "orderID",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "paidTime",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "alipayTotalPrice",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "rebate",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "demo.service.v1.Wechat"
                 ]
             }
         },
@@ -183,6 +457,29 @@
         }
     },
     "definitions": {
+        ".demo.service.v1.BalanceTemplateMsgSendReq": {
+            "type": "object",
+            "properties": {
+                "userID": {
+                    "type": "string"
+                },
+                "orderID": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "earningTime": {
+                    "type": "string"
+                },
+                "salary": {
+                    "type": "string"
+                },
+                "balance": {
+                    "type": "string"
+                }
+            }
+        },
         ".demo.service.v1.HelloReq": {
             "type": "object",
             "properties": {
@@ -198,6 +495,63 @@
             "type": "object",
             "properties": {
                 "content": {
+                    "type": "string"
+                }
+            }
+        },
+        ".demo.service.v1.KeyConvertReq": {
+            "type": "object",
+            "properties": {
+                "FromKey": {
+                    "type": "string"
+                },
+                "UserID": {
+                    "type": "string"
+                }
+            }
+        },
+        ".demo.service.v1.KeyConvertResp": {
+            "type": "object",
+            "properties": {
+                "ItemURL": {
+                    "type": "string"
+                },
+                "Price": {
+                    "type": "string"
+                },
+                "Rebate": {
+                    "type": "string"
+                },
+                "Coupon": {
+                    "type": "string"
+                },
+                "Title": {
+                    "type": "string"
+                },
+                "PicURL": {
+                    "type": "string"
+                }
+            }
+        },
+        ".demo.service.v1.MatchedTemplateMsgSendReq": {
+            "type": "object",
+            "properties": {
+                "userID": {
+                    "type": "string"
+                },
+                "orderID": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "paidTime": {
+                    "type": "string"
+                },
+                "alipayTotalPrice": {
+                    "type": "string"
+                },
+                "rebate": {
                     "type": "string"
                 }
             }
@@ -218,6 +572,47 @@
             "properties": {
                 "MediaID": {
                     "type": "string"
+                }
+            }
+        },
+        ".demo.service.v1.NewsURLGetReq": {
+            "type": "object",
+            "properties": {
+                "fakeID": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
+        ".demo.service.v1.NewsURLGetResp": {
+            "type": "object",
+            "properties": {
+                "URL": {
+                    "type": "string"
+                }
+            }
+        },
+        ".demo.service.v1.WithDrawReq": {
+            "type": "object",
+            "properties": {
+                "userID": {
+                    "type": "string"
+                }
+            }
+        },
+        ".demo.service.v1.WithDrawResp": {
+            "type": "object",
+            "properties": {
+                "Rebate": {
+                    "type": "string"
+                },
+                "OrderIDs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
