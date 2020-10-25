@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wechat
+spec:
+  replicas: 2
+  minReadySeconds: 5
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: wechat
+  template:
+    metadata:
+      labels:
+        app: wechat
+    spec:
+      containers:
+        - name: wechat
+          image: registry.hub.docker.com/naist4869/wechat:latest
+          command:
+            - "./wechat"
+            - "-conf"
+            - "configs"
+          ports:
+            - containerPort: 8000
+            - containerPort: 8001
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  wechat-svc
+spec:
+  selector:
+    app:  wechat
+  ports:
+    - name:  web
+      port:  8000
+      targetPort:  8000
+    - name: grpc
+      port: 8001
+      targetPort: 8001

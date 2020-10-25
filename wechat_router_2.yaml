@@ -1,0 +1,33 @@
+#apiVersion: traefik.containo.us/v1alpha1
+#kind: IngressRoute
+#metadata:
+#  name: wechatnotls
+#  namespace: default
+#spec:
+#  entryPoints:
+#    - web
+#  routes:
+#    - match: Host(`k8s.itaobao.co`)
+#      kind: Rule
+#      services:
+#        - name: wechat-svc
+#          port: 8000
+#
+#---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: weichattls
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    ##使用了阿里dnsChallenge可以申请通配符证书
+    - match: Host(`k8s.itaobao.co`)
+      kind: Rule
+      services:
+        - name: wechat-svc
+          port: 8000
+  tls:
+    certResolver: myresolver

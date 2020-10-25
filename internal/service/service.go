@@ -429,7 +429,7 @@ func (s *Service) handleText(ctx context.Context, text model.RxTextMessageExtra,
 			WithDrawTime: time.Now().String(),
 			Action:       "",
 		}); err != nil {
-			//回调
+			//回调提现失败  或者把发送模板消息放入taobaoke
 		}
 		if len(resp.OrderIDs) == 0 {
 			return model.NewTxTextMessageSpecifics("目前没有可提现订单,请查看订单是否确认收货.")

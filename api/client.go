@@ -14,7 +14,7 @@ const AppID = "TODO: ADD APP ID"
 
 func NewfileSystemClient(cfg *warden.ClientConfig, opts ...grpc.DialOption) (FileSystemClient, error) {
 	client := warden.NewClient(cfg, opts...)
-	cc, err := client.Dial(context.Background(), fmt.Sprintf("direct://default/127.0.0.1:1239"))
+	cc, err := client.Dial(context.Background(), fmt.Sprintf("direct://default/filesystem-svc:1239"))
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func NewfileSystemClient(cfg *warden.ClientConfig, opts ...grpc.DialOption) (Fil
 // direct://default/127.0.0.1:1241
 func NewtbkClient(cfg *warden.ClientConfig, opts ...grpc.DialOption) (TBKClient, error) {
 	client := warden.NewClient(cfg, opts...)
-	cc, err := client.Dial(context.Background(), fmt.Sprintf("direct://default/123.56.29.61:1241"))
+	cc, err := client.Dial(context.Background(), fmt.Sprintf("direct://default/taobaoke-svc:1241"))
 	if err != nil {
 		return nil, err
 	}
